@@ -69,7 +69,7 @@ class CodecBase {
       m_ctx->bit_rate =
           (bitrate == ACCORDINGLY)
               ? av_image_get_buffer_size(m_ctx->pix_fmt, m_ctx->width,
-                                         m_ctx->height, 32)
+                                         m_ctx->height, 16)
               : bitrate;
     };
   }

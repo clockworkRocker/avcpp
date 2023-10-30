@@ -5,6 +5,7 @@ extern "C" {
 #include <memory>
 
 #include "internal/frame.hpp"
+#include "internal/handlers.hpp"
 #include "internal/swscale.hpp"
 
 using namespace avcpp;
@@ -51,6 +52,8 @@ int SWScale::transform(const Frame& frame, uint8_t* dst[],
                                 static_cast<AVPixelFormat>(frame.format()),
                                 m_dstWidth, m_dstHeight, m_dstPixFmt, m_flags,
                                 nullptr, nullptr, nullptr);
+  if (!m_ctx)
+    AV_CPP_ERROR(SWScaleFailed);
 
   return sws_scale(*m_ctx, frame.raw()->data, frame.raw()->linesize, 0,
                    frame.height(), dst, dstStrides);
@@ -62,6 +65,8 @@ int SWScale::transform(const Frame& src, Frame& dst) {
                                 dst.width(), dst.height(),
                                 static_cast<AVPixelFormat>(dst.format()),
                                 m_flags, nullptr, nullptr, nullptr);
+  if (!*m_ctx)
+    AV_CPP_ERROR(SWScaleFailed);
 
   return sws_scale_frame(*m_ctx, dst.raw(), src.raw());
 }

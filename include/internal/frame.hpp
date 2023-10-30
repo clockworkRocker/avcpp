@@ -10,6 +10,9 @@ class Frame {
  public:  // * Types and friends
   friend Frame cpp__wrap(AVFrame* frame);
 
+ public: // * Constants
+  static int DefaultAlign;
+
  public:  // * Construction
   /// Basic constructor
   Frame(int width = 0, int height = 0, AVPixelFormat format = AV_PIX_FMT_NONE);
