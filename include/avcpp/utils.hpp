@@ -4,7 +4,7 @@
 namespace avcpp {
 
 /// @brief Read an image from file, decode it and put the raw data into a frame
-/// @return A filled frame on success, an empty one on failure
+/// @return The filled frame on success, an empty one on failure
 Frame imread(const char* path);
 
 }
