@@ -1,72 +1,83 @@
-void unref(AVBufferRef** ptr) {
-  av_buffer_unref(ptr);
-  delete ptr;
-}
-
-/// @brief Create a new ref to AVBuffer and wrap it with a unique_ptr for
-/// automatic unreffing
-std::unique_ptr<AVBufferRef*, void (*)(AVBufferRef**)> make_ref(
-    AVBufferRef* src) {
-  return std::unique_ptr<AVBufferRef*, void (*)(AVBufferRef**)>(
-      new AVBufferRef*(src), &unref);
-};
-
-/**
- * @brief Convert a frame into a numpy.array
- *
- * @bug Using plain memcpy from buffer to buffer can cause issues
- */
-py::array_t<uint8_t> frameToNumpy(const Frame& f,
-                                  AVPixelFormat format = AV_PIX_FMT_RGB24) {
+py::buffer_info getInfoForFrame(Frame& f, AVPixelFormat fmt = AV_PIX_FMT_NONE) {
   int dims = 0;
   int channels = 0;
+  int itemsize = sizeof(uint8_t);
+  std::string format = py::format_descriptor<uint8_t>::format();
   py::array::ShapeContainer shape;
   py::array::ShapeContainer strides;
-  int cStride = 0;
-  py::buffer_info desc;
-  uint8_t* buf = nullptr;
+  if (fmt < 0) fmt = static_cast<AVPixelFormat>(f.format());
 
-  switch (format) {
+  switch (static_cast<AVPixelFormat>(fmt)) {
+    // * -------- 4-channel formats -------- *
+    case AV_PIX_FMT_RGBAF32:  // * Adjust size for float32 format
+      itemsize = sizeof(_Float32);
+      format = py::format_descriptor<_Float32>::format();
+    case AV_PIX_FMT_ABGR:
+    case AV_PIX_FMT_ARGB:
     case AV_PIX_FMT_RGBA:
+      dims = 3;
       channels = 4;
-      dims = 3;
       break;
+
+      // * -------- 3-channel formats -------- *
+
+    case AV_PIX_FMT_RGBF32:  // * Adjust size for float32 format
+      itemsize = sizeof(_Float32);
+      py::format_descriptor<_Float32>::format();
     case AV_PIX_FMT_RGB24:
-      channels = 3;
+    case AV_PIX_FMT_BGR24:
       dims = 3;
+      channels = 3;
       break;
+
+    // * -------- Single-channel formats -------- *
+    case AV_PIX_FMT_GRAYF32:  // * Adjust size for float32 format
+      itemsize = sizeof(_Float32);
+      format = py::format_descriptor<_Float32>::format();
     case AV_PIX_FMT_GRAY8:
-      channels = 1;
       dims = 2;
+      channels = 1;
       break;
+
     default:
-      throw(std::runtime_error(
-          "frameToNumpy: Selected pixel format is not supported."));
+      throw std::invalid_argument(
+          "This pixel format is not supported. Use to_numpy() with one of the "
+          "supported formats to perform conversion.");
   }
 
   switch (dims) {
+    case 2:
+      shape = {f.height(), f.width()};
+      strides = {f.width() * channels * itemsize, channels * itemsize};
     case 3:
       shape = {f.height(), f.width(), channels};
-      strides = {channels * f.width(), channels, 1};
-      break;
-    case 2:
-      shape = {f.width(), f.height()};
-      strides = {channels * f.width(), channels};
-      break;
-  }
-  buf = new uint8_t[f.width() * f.height() * channels];
-  desc = {buf, sizeof(uint8_t), py::format_descriptor<uint8_t>::format(),
-          dims,    shape,           strides};
-  cStride = static_cast<int>(strides->at(0));
-
-  if (static_cast<AVPixelFormat>(f.format()) == format) {
-  // * Sorry, lads, couldn't avoid copying
-    memcpy(buf, f.buffer(), f.width() * f.height() * channels);
-  } else {
-    SWScale::setDstProps(f.width(), f.height(), format);
-    SWScale::setFlags(SWS_LANCZOS);
-    SWScale::transform(f, &buf, &cStride);
+      strides = {f.width() * channels * itemsize, channels * itemsize,
+                 itemsize};
   }
 
-  return py::array_t<uint8_t>(desc);
+  return {
+      static_cast<void*>(f.buffer()), itemsize, format, dims, shape, strides};
+}
+
+/**
+ * @brief Convert a frame into a numpy.array
+ */
+py::array_t<uint8_t> frameToNumpy(Frame& f,
+                                  AVPixelFormat format = AV_PIX_FMT_RGB24) {
+  auto desc = getInfoForFrame(f, format);
+  int cStride = static_cast<int>(desc.strides[0]);
+  int ret = 0;
+
+  if (static_cast<AVPixelFormat>(f.format()) == format)
+    return py::array_t<uint8_t>(desc);
+
+  desc.ptr = nullptr;
+  py::array_t<uint8_t> result(desc);
+  uint8_t* ptr = result.mutable_data();
+
+  SWScale::setDstProps(f.width(), f.height(), format);
+  SWScale::setFlags(SWS_LANCZOS);
+  SWScale::transform(f, &ptr, &cStride);
+
+  return result;
 }

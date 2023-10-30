@@ -232,5 +232,6 @@ void add_pixelFormats(py::module& m) {
       .value("P412LE", AV_PIX_FMT_P412LE)
       .value("GBRAP14BE", AV_PIX_FMT_GBRAP14BE)
       .value("GBRAP14LE", AV_PIX_FMT_GBRAP14LE)
-      .export_values();
+      .export_values()
+      .def("__str__", &av_get_pix_fmt_name);
 }

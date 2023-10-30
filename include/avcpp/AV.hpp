@@ -20,6 +20,5 @@ extern "C" {
 #include <internal/codec.hpp>
 #include "internal/video_encoder.hpp"
 #include "internal/video_decoder.hpp"
-#include "internal/utils.hpp"
 
 #endif  // AV_CPP__AV_H

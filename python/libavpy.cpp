@@ -4,6 +4,7 @@ using namespace pybind11::literals;
 namespace py = pybind11;
 
 #include <avcpp/AV.hpp>
+#include <avcpp/utils.hpp>
 using namespace avcpp;
 
 #include <sstream>
@@ -20,7 +21,7 @@ PYBIND11_MODULE(libavpy, m) {
   add_pixelFormats(m);
   add_codec_ids(m);
 
-  py::class_<Frame>(m, "Frame")
+  py::class_<Frame>(m, "Frame", py::buffer_protocol())
       .def(py::init<int, int, AVPixelFormat>(), "width"_a = 0, "height"_a = 0,
            "pixel_format"_a = AV_PIX_FMT_NONE)
       .def("datasize", &Frame::datasize,
@@ -45,6 +46,8 @@ PYBIND11_MODULE(libavpy, m) {
                  << '>';
              return str.str();
            })
+
+      .def_buffer([](Frame& frame) { return getInfoForFrame(frame); })
 
       .doc() = "Class that represents libav frames";
 
@@ -165,4 +168,6 @@ PYBIND11_MODULE(libavpy, m) {
           "call. Otherwise a frame with default values and empty buffer will "
           "be returned")
       .doc() = "Class for video decoding";
+
+  m.def("imread", &imread, "path"_a, "Read an image from given path");
 }
