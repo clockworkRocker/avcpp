@@ -33,4 +33,4 @@ pkg_check_modules(LIBAV REQUIRED IMPORTED_TARGET
 )
 
 set(avcpp_LIBRARIES ${avcpp_LIBRARY} ${LIBAV_LIBRARIES})
-message("-- Found avcpp: ${avcpp_VERSION} (${avcpp_CMAKE_MODULES_DIR})")
+message(STATUS, "-- Found avcpp: ${avcpp_VERSION} (${avcpp_CMAKE_MODULES_DIR})")

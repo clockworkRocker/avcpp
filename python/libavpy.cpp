@@ -36,6 +36,9 @@ PYBIND11_MODULE(libavpy, m) {
       .def("to_numpy", &frameToNumpy, "format"_a = AV_PIX_FMT_RGB24,
            "Convert the frame into RGB24 format and place the result into a "
            "numpy array")
+      .def_static("from_numpy", &numpyToFrame, "array"_a,
+                  "format"_a = AV_PIX_FMT_RGB24, "copy"_a = true,
+                  "Fill up the frame data assuming given data format")
 
       .def("__repr__",
            [](const Frame& frame) {

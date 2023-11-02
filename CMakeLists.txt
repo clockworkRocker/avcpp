@@ -7,7 +7,6 @@ option(AVCPP_BUILD_TESTS OFF)
 # ---------------------------- FIND FFMPEG LIBRARIES -------------------------- #
 find_package(PkgConfig REQUIRED)
 pkg_check_modules(LIBAV REQUIRED IMPORTED_TARGET
-    libavdevice
     libavfilter
     libavformat
     libavcodec
@@ -68,7 +67,7 @@ target_link_libraries(libavpy PRIVATE ${PROJECT_NAME}_shared)
 
 install(
     TARGETS libavpy
-    DESTINATION "lib/python${Python3_VERSION_MAJOR}.${Python3_VERSION_MINOR}/site-packages/"
+    DESTINATION "${Python3_SITEARCH}"
 )
 endif(AVCPP_BUILD_PYTHON)
 

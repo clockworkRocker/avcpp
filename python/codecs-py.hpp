@@ -273,10 +273,6 @@ void add_codec_ids(py::module& m) {
       .value("WBMP", AV_CODEC_ID_WBMP)
       .value("MEDIA100", AV_CODEC_ID_MEDIA100)
       .value("VQC", AV_CODEC_ID_VQC)
-      .value("PDV", AV_CODEC_ID_PDV)
-      .value("EVC", AV_CODEC_ID_EVC)
-      .value("RTV1", AV_CODEC_ID_RTV1)
-      .value("VMIX", AV_CODEC_ID_VMIX)
 
       .value("FIRST_AUDIO", AV_CODEC_ID_FIRST_AUDIO)
       .value("PCM_S16LE", AV_CODEC_ID_FIRST_AUDIO)
@@ -486,8 +482,6 @@ void add_codec_ids(py::module& m) {
       .value("FTR", AV_CODEC_ID_FTR)
       .value("WAVARC", AV_CODEC_ID_WAVARC)
       .value("RKA", AV_CODEC_ID_RKA)
-      .value("AC4", AV_CODEC_ID_AC4)
-      .value("OSQ", AV_CODEC_ID_OSQ)
 
       /* subtitle codecs */
 
@@ -534,7 +528,6 @@ void add_codec_ids(py::module& m) {
       .value("DVD_NAV", AV_CODEC_ID_DVD_NAV)
       .value("TIMED_ID3", AV_CODEC_ID_TIMED_ID3)
       .value("BIN_DATA", AV_CODEC_ID_BIN_DATA)
-      .value("SMPTE_2038", AV_CODEC_ID_SMPTE_2038)
 
       .value("PROBE", AV_CODEC_ID_PROBE)
 

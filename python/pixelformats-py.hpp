@@ -226,12 +226,6 @@ void add_pixelFormats(py::module& m) {
       .value("RGBF32LE", AV_PIX_FMT_RGBF32LE)
       .value("RGBAF32BE", AV_PIX_FMT_RGBAF32BE)
       .value("RGBAF32LE", AV_PIX_FMT_RGBAF32LE)
-      .value("P212BE", AV_PIX_FMT_P212BE)
-      .value("P212LE", AV_PIX_FMT_P212LE)
-      .value("P412BE", AV_PIX_FMT_P412BE)
-      .value("P412LE", AV_PIX_FMT_P412LE)
-      .value("GBRAP14BE", AV_PIX_FMT_GBRAP14BE)
-      .value("GBRAP14LE", AV_PIX_FMT_GBRAP14LE)
       .export_values()
       .def("__str__", &av_get_pix_fmt_name);
 }
