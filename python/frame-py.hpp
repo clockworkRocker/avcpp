@@ -1,4 +1,6 @@
-py::buffer_info getInfoForFrame(Frame &f, AVPixelFormat fmt = AV_PIX_FMT_NONE) {
+namespace frame_py{
+
+py::buffer_info getBufferInfo(Frame &f, AVPixelFormat fmt = AV_PIX_FMT_NONE) {
   int dims = 0;
   int channels = 0;
   int itemsize = sizeof(uint8_t);
@@ -84,9 +86,9 @@ py::buffer_info getInfoForFrame(Frame &f, AVPixelFormat fmt = AV_PIX_FMT_NONE) {
 /**
  * @brief Convert a frame into a numpy.array
  */
-py::array_t<uint8_t> frameToNumpy(Frame &f,
+py::array_t<uint8_t> toNumpy(Frame &f,
                                   AVPixelFormat format = AV_PIX_FMT_RGB24) {
-  auto desc = getInfoForFrame(f, format);
+  auto desc = getBufferInfo(f, format);
   int cStride = static_cast<int>(desc.strides[0]);
   int ret = 0;
 
@@ -107,7 +109,7 @@ py::array_t<uint8_t> frameToNumpy(Frame &f,
 /**
  * @brief Make a frame out of numpy.array
  */
-Frame numpyToFrame(py::array_t<uint8_t> &arr,
+Frame fromNumpy(py::array_t<uint8_t> &arr,
                    AVPixelFormat format = AV_PIX_FMT_RGB24, bool copy = true) {
   auto desc = arr.request();
 
@@ -136,4 +138,5 @@ Frame numpyToFrame(py::array_t<uint8_t> &arr,
   }
 
   return cpp__wrap(frame);
+}
 }

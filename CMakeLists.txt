@@ -45,12 +45,17 @@ target_link_libraries(${PROJECT_NAME}_static ${LIBAV_LIBRARIES})
 
 # ---------------------------------- TESTS ----------------------------------- #
 if (AVCPP_BUILD_TESTS)
+enable_testing()
+include(CTest)
 
 file(GLOB_RECURSE TESTS ${PROJECT_SOURCE_DIR}/test/*.cpp)
 foreach(_test ${TESTS})
     get_filename_component(testName ${_test} NAME_WE)
     add_executable(${testName} ${_test})
     target_link_libraries(${testName} ${PROJECT_NAME}_shared ${LIBAV_LIBRARIES})
+    add_test(
+        NAME ${testName} 
+        COMMAND ${testName})
 endforeach(_test ${TESTS})
 
 

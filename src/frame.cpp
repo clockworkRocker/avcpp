@@ -82,9 +82,10 @@ Frame& Frame::toFormat(AVPixelFormat format) {
       
   if (!conversion) AV_CPP_RETURN_ON_ERROR(*this, SWScaleFailed);
 
-  ret =
+  /*ret =
       sws_scale(conversion, m_frame->data, m_frame->linesize, 0,
-                m_frame->height, another.raw()->data, another.raw()->linesize);
+                m_frame->height, another.raw()->data, another.raw()->linesize);*/
+  ret = sws_scale_frame(conversion, another.raw(), m_frame);
   sws_freeContext(conversion);
 
   if (ret < 0) AV_CPP_RETURN_ON_ERROR(*this, ret);

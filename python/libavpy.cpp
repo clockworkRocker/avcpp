@@ -12,7 +12,8 @@ using namespace avcpp;
 #include "ratios-py.hpp"
 #include "pixelformats-py.hpp"
 #include "codecs-py.hpp"
-#include "frame-to-numpy.hpp"
+#include "frame-py.hpp"
+#include "packet-py.hpp"
 
 PYBIND11_MODULE(libavpy, m) {
   m.doc() = "Python bindings for some of libav functions";
@@ -33,10 +34,10 @@ PYBIND11_MODULE(libavpy, m) {
       .def_property("pts", &Frame::pts, &Frame::setPts)
       .def("is_keyframe", &Frame::isKeyFrame)
       .def("to_format", &Frame::toFormat)
-      .def("to_numpy", &frameToNumpy, "format"_a = AV_PIX_FMT_RGB24,
+      .def("to_numpy", &frame_py::toNumpy, "format"_a = AV_PIX_FMT_RGB24,
            "Convert the frame into RGB24 format and place the result into a "
            "numpy array")
-      .def_static("from_numpy", &numpyToFrame, "array"_a,
+      .def_static("from_numpy", &frame_py::fromNumpy, "array"_a,
                   "format"_a = AV_PIX_FMT_RGB24, "copy"_a = true,
                   "Fill up the frame data assuming given data format")
 
@@ -49,12 +50,14 @@ PYBIND11_MODULE(libavpy, m) {
                  << '>';
              return str.str();
            })
+      .def("__copy__", [](const Frame& f){ return Frame(f); })
+      .def("__deepcopy__", [](const Frame& f, py::dict&) { return Frame(f); }, "memo"_a)
 
-      .def_buffer([](Frame& frame) { return getInfoForFrame(frame); })
+      .def_buffer([](Frame& frame) { return frame_py::getBufferInfo(frame); })
 
       .doc() = "Class that represents libav frames";
 
-  py::class_<Packet>(m, "Packet")
+  py::class_<Packet>(m, "Packet", py::buffer_protocol())
       .def(py::init())
       .def_property(
           "pts", &Packet::pts,
@@ -65,21 +68,10 @@ PYBIND11_MODULE(libavpy, m) {
       .def("has_keyframe", &Packet::hasKeyframe,
            "Returns true if the packet contains a keyframe")
       .def("size", &Packet::size, "Get the size of packet buffer in bytes")
-      .def(
-          "buffer",
-          [](const Packet& p) {
-            return py::bytes((const char*)p.buffer(), p.size());
-          },
-          "")
+      .def_buffer(&packet_py::getBufferInfo)
+      .def_static("from_bytes", packet_py::fromBytes)
 
-      .def("__repr__",
-           [](const Packet& p) {
-             std::ostringstream out;
-             out << '<' << avcodec_get_name(p.codecID()) << " AVPacket of size "
-                 << p.size() << '>';
-
-             return out.str();
-           })
+      .def("__repr__", packet_py::repr)
 
       .doc() = "A Python wrapper around a libav AVPacket struct pointer";
 
@@ -126,6 +118,8 @@ PYBIND11_MODULE(libavpy, m) {
            "Warning:\n"
            "--------\n"
            "Doing this will make the codec unusable until the next open() call")
+      .def("default_pixel_format", &CodecBase::defaultPixFmt,
+           "Get the default pixel format for given codec")
       .doc() = "The base class for encoders and decoders";
 
   py::class_<VideoEncoder, CodecBase>(m, "VideoEncoder")
