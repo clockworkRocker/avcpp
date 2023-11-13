@@ -26,7 +26,7 @@ void add_ratios(py::module& m) {
       .def("__add__", &av_add_q, "other"_a)
       .def("__sub__", &av_sub_q, "other"_a)
       .def("__mul__", &av_mul_q, "other"_a)
-      .def("__div__", &av_div_q, "other"_a)
+      .def("__truediv__", &av_div_q, "other"_a)
       .def("reduce",
            [](AVRational& ratio) {
              av_reduce(&ratio.num, &ratio.den, ratio.num, ratio.den, INT32_MAX);
